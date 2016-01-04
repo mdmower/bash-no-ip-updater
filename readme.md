@@ -6,6 +6,7 @@ A bash script to update the IP address of a no-ip.com hostname.
 __Prerequisites__
 
 1.  curl
+2.  vim
 
 __Usage__
 
