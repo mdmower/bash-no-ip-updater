@@ -99,8 +99,10 @@ if [ -e $LOGFILE ] && tac $LOGFILE | grep -q -m1 '(911)'; then
     LASTNL=$([[ $NINELINE =~ \[(.*?)\] ]] && echo "${BASH_REMATCH[1]}")
     LASTCONTACT=$(date -d "$LASTNL" '+%s')
     if [ `expr $NOW - $LASTCONTACT` -lt 1800 ]; then
-        LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] Response code 911 received less than 30 minutes ago; canceling request."
-        echo $LOGLINE >> $LOGFILE
+        LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
+        LOGLINE="Response code 911 received less than 30 minutes ago; canceling request."
+        echo $LOGLINE
+        echo "$LOGDATE $LOGLINE" >> $LOGFILE
         exit 1
     fi
 fi
@@ -134,8 +136,10 @@ while [ -n "${GET_IP_URLS[$GIP_INDEX]}" ] && ! valid_ip $NEWIP; do
 done
 
 if ! valid_ip $NEWIP; then
+    LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
     LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] Could not find current IP"
-    echo $LOGLINE >> $LOGFILE
+    echo $LOGLINE
+    echo "$LOGDATE $LOGLINE" >> $LOGFILE
     exit 1
 fi
 
@@ -145,41 +149,44 @@ if [ $FUPD == true ]; then
 fi
 RESPONSE=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
 
-LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
 RESPONSE_A=$(echo $RESPONSE | awk '{ print $1 }')
 case $RESPONSE_A in
     "good")
         RESPONSE_B=$(echo $RESPONSE | awk '{ print $2 }')
-        LOGLINE="$LOGDATE (good) DNS hostname(s) successfully updated to $RESPONSE_B."
+        LOGLINE="(good) DNS hostname(s) successfully updated to $RESPONSE_B."
         ;;
     "nochg")
         RESPONSE_B=$(echo $RESPONSE | awk '{ print $2 }')
-        LOGLINE="$LOGDATE (nochg) IP address is current: $RESPONSE_B; no update performed."
+        LOGLINE="(nochg) IP address is current: $RESPONSE_B; no update performed."
         ;;
     "nohost")
-        LOGLINE="$LOGDATE (nohost) Hostname supplied does not exist under specified account. Revise config file."
+        LOGLINE="(nohost) Hostname supplied does not exist under specified account. Revise config file."
         ;;
     "badauth")
-        LOGLINE="$LOGDATE (badauth) Invalid username password combination."
+        LOGLINE="(badauth) Invalid username password combination."
         ;;
     "badagent")
-        LOGLINE="$LOGDATE (badagent) Client disabled - No-IP is no longer allowing requests from this update script."
+        LOGLINE="(badagent) Client disabled - No-IP is no longer allowing requests from this update script."
         ;;
     "!donator")
-        LOGLINE="$LOGDATE (!donator) An update request was sent including a feature that is not available."
+        LOGLINE="(!donator) An update request was sent including a feature that is not available."
         ;;
     "abuse")
-        LOGLINE="$LOGDATE (abuse) Username is blocked due to abuse."
+        LOGLINE="(abuse) Username is blocked due to abuse."
         ;;
     "911")
-        LOGLINE="$LOGDATE (911) A fatal error on our side such as a database outage. Retry the update in no sooner than 30 minutes."
+        LOGLINE="(911) A fatal error on our side such as a database outage. Retry the update in no sooner than 30 minutes."
         ;;
     *)
-        LOGLINE="$LOGDATE (error) Could not understand the response from No-IP. The DNS update server may be down."
+        LOGLINE="(error) Could not understand the response from No-IP. The DNS update server may be down."
         ;;
 esac
 
+LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
+
+echo "IP: $NEWIP"
 echo $NEWIP > $IPFILE
-echo $LOGLINE >> $LOGFILE
+echo $LOGLINE
+echo "$LOGDATE $LOGLINE" >> $LOGFILE
 
 exit 0
