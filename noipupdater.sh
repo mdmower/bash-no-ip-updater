@@ -32,8 +32,8 @@ fi
 
 USERAGENT="Bash No-IP Updater/0.8 "$USERNAME
 
-USERNAME=$(echo -ne $USERNAME | xxd -plain | tr -d '\n' | sed 's/\(..\)/%\1/g')
-PASSWORD=$(echo -ne $PASSWORD | xxd -plain | tr -d '\n' | sed 's/\(..\)/%\1/g')
+USERNAME=$(echo -ne $USERNAME | od -A n -t x1 | tr -d '\n' | sed 's/ /%/g')
+PASSWORD=$(echo -ne $PASSWORD | od -A n -t x1 | tr -d '\n' | sed 's/ /%/g')
 
 if ! [[ "$FORCEUPDATEFREQ" =~ ^[0-9]+$ ]] ; then
    echo "FORCEUPDATEFREQ has not been set correctly in the config file"
