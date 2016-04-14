@@ -148,6 +148,7 @@ if [ $FUPD == true ]; then
     sleep 5
 fi
 RESPONSE=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
+RESPONSE=$(echo $RESPONSE | tr -cd "[:print:]")
 
 RESPONSE_A=$(echo $RESPONSE | awk '{ print $1 }')
 case $RESPONSE_A in
