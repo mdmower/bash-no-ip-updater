@@ -137,7 +137,7 @@ done
 
 if ! valid_ip $NEWIP; then
     LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
-    LOGLINE="[$(date +'%Y-%m-%d %H:%M:%S')] Could not find current IP"
+    LOGLINE="Could not find current IP"
     echo $LOGLINE
     echo "$LOGDATE $LOGLINE" >> $LOGFILE
     exit 1
