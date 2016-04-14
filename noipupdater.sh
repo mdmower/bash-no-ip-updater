@@ -126,7 +126,7 @@ fi
 
 GET_IP_URLS[0]="http://icanhazip.com"
 GET_IP_URLS[1]="http://wtfismyip.com/text"
-GET_IP_URLS[2]="http://www.networksecuritytoolkit.org/nst/tools/ip.php"
+GET_IP_URLS[2]="http://nst.sourceforge.net/nst/tools/ip.php"
 GET_IP_URLS[3]="http://checkip.dyndns.org"
 
 GIP_INDEX=0
