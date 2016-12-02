@@ -13,9 +13,3 @@ HOST="host.domain.com"
 
 # The directory where logs will be stored (required)
 LOGDIR="$HOME/logs"
-
-# Frequency at which an IP update is forced, even if the IP has not changed.
-# This helps prevent hostname expiration.
-# Enter the value in seconds: 864000 = 10days
-# Setting this value to 0 will disable this feature.
-FORCEUPDATEFREQ="864000"

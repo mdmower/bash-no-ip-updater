@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2013 Matt Mower
+# Copyright (C) 2016 Matthew D. Mower
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,11 +34,6 @@ USERAGENT="Bash No-IP Updater/0.9 "$USERNAME
 
 USERNAME=$(echo -ne $USERNAME | od -A n -t x1 | tr -d '\n' | sed 's/ /%/g')
 PASSWORD=$(echo -ne $PASSWORD | od -A n -t x1 | tr -d '\n' | sed 's/ /%/g')
-
-if ! [[ "$FORCEUPDATEFREQ" =~ ^[0-9]+$ ]] ; then
-   echo "FORCEUPDATEFREQ has not been set correctly in the config file"
-   exit 1
-fi
 
 if [ ! -d $LOGDIR ]; then
     mkdir -p $LOGDIR
@@ -107,23 +102,6 @@ if [ -e $LOGFILE ] && tac $LOGFILE | grep -q -m1 '(911)'; then
     fi
 fi
 
-# Check log for last successful ip change to No-IP and set FUPD flag if an
-# update is necessary.  (Note: 'nochg' return code is not enough for No-IP to be
-# satisfied; must be 'good' return code)
-FUPD=false
-if [ $FORCEUPDATEFREQ -eq 0 ]; then
-    FUPD=false
-elif [ -e $LOGFILE ] && tac $LOGFILE | grep -q -m1 '(good)'; then
-    GOODLINE=$(tac $LOGFILE | grep -m1 '(good)')
-    LASTGC=$([[ $GOODLINE =~ \[(.*?)\] ]] && echo "${BASH_REMATCH[1]}")
-    LASTCONTACT=$(date -d "$LASTGC" '+%s')
-    if [ `expr $NOW - $LASTCONTACT` -gt $FORCEUPDATEFREQ ]; then
-        FUPD=true
-    fi
-else
-    FUPD=true
-fi
-
 GET_IP_URLS[0]="http://icanhazip.com"
 GET_IP_URLS[1]="http://wtfismyip.com/text"
 GET_IP_URLS[2]="http://nst.sourceforge.net/nst/tools/ip.php"
@@ -143,10 +121,6 @@ if ! valid_ip $NEWIP; then
     exit 1
 fi
 
-if [ $FUPD == true ]; then
-    curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=127.0.0.1" &> /dev/null
-    sleep 5
-fi
 RESPONSE=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
 RESPONSE=$(echo $RESPONSE | tr -cd "[:print:]")
 
