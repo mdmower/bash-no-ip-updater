@@ -16,7 +16,7 @@
 
 # Defines
 
-CONFIGFILE="$( cd "$( dirname "$0" )" && pwd )/config"
+CONFIGFILE="$( cd "$( dirname "$0" )" && pwd ).config"
 
 if [ -e $CONFIGFILE ]; then
     source $CONFIGFILE

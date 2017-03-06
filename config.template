@@ -1,0 +1,34 @@
+# Copyright (C) 2013 Matt Mower
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Config file for Bash No-IP Updater
+# Retain the double quotes surrounding each of the values below
+
+# No-IP uses your email address for the username.
+USERNAME="email@address.com"
+PASSWORD="password"
+
+# Multiple hosts associated with a single IP address can be entered by
+# separating them with commas: HOST="host1.domain.org,host2.domain.org"
+HOST="host.domain.com"
+
+# The directory where logs will be stored (required)
+LOGDIR="$HOME/logs"
+
+# Frequency at which an IP update is forced, even if the IP has not changed.
+# This helps prevent hostname expiration.
+# Enter the value in seconds: 864000 = 10days
+# Setting this value to 0 will disable this feature.
+FORCEUPDATEFREQ="864000"
+
