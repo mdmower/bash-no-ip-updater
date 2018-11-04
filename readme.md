@@ -30,4 +30,5 @@ Note: If the cron job doesn't execute correctly, try these suggestions:
 
 Forked from the [Simple Bash No-IP Updater by AntonioCS](https://github.com/AntonioCS/no-ip.com-bash-updater)
 
-2013 © Matt Mower
+2013 © Matthew D. Mower
+2012 © AntonioCS
