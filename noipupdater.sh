@@ -154,8 +154,8 @@ function get_logline() {
         "badagent")
             LOGLINE="(badagent) [$host] Client disabled - No-IP is no longer allowing requests from this update script."
             ;;
-        "!donator")
-            LOGLINE="(!donator) [$host] An update request was sent including a feature that is not available."
+        '!donator')
+            LOGLINE='(!donator)'" [$host] An update request was sent including a feature that is not available."
             ;;
         "abuse")
             LOGLINE="(abuse) [$host] Username is blocked due to abuse."
