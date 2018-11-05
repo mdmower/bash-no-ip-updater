@@ -93,7 +93,7 @@ fi
 
 if [ -e "$LOGFILE" ] && tac "$LOGFILE" | grep -q -m1 '(911)'; then
     NINELINE=$(tac "$LOGFILE" | grep -m1 '(911)')
-    LASTNL=$([[ "$NINELINE" =~ \[(.*?)\] ]] && echo "${BASH_REMATCH[1]}")
+    LASTNL=$([[ "$NINELINE" =~ \[([^\]]+?)\] ]] && echo "${BASH_REMATCH[1]}")
     LASTCONTACT=$(date -d "$LASTNL" '+%s')
     if [ `expr $NOW - $LASTCONTACT` -lt 1800 ]; then
         LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
