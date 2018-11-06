@@ -1,7 +1,7 @@
 # Sample config file for Bash No-IP Updater
 
-# Copy this file to "config"
-# Retain the double quotes surrounding each of the values below
+# Copy this file to "config" in the same directory as noipupdater.sh.
+# Retain the double quotes surrounding each of the values below.
 
 # No-IP uses your email address for the username.
 USERNAME="email@address.com"
