@@ -13,3 +13,8 @@ HOST="host.domain.com"
 
 # The directory where logs will be stored (required)
 LOGDIR="$HOME/logs"
+
+# Rotate and compress (if gzip support is present) log files when
+# length exceeds 10010 lines, moving 10000 lines to backup and
+# retaining remaining lines in original logfile
+ROTATE_LOGS=true

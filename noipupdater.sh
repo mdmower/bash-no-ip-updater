@@ -145,6 +145,26 @@ if [ -e "$LOGFILE" ] && tac "$LOGFILE" | grep -q -m1 '(911)'; then
     fi
 fi
 
+if [ "$ROTATE_LOGS" = true ]; then
+    LOGLENGTH=$(wc -l "$LOGFILE" | awk '{ print $1 }')
+    if [ $LOGLENGTH -ge 10010 ]; then
+        BACKUPDATE=$(date +'%Y-%m-%d_%H%M%S')
+        BACKUPFILE="$LOGFILE-$BACKUPDATE.log"
+        touch "$BACKUPFILE"
+        if [ $? -eq 0 ]; then
+            head -10000 "$LOGFILE" > "$BACKUPFILE"
+            if command -v gzip; then
+                gzip "$BACKUPFILE"
+            fi
+            LASTLINES=$(tail -n +10001 "$LOGFILE")
+            echo "$LASTLINES" > "$LOGFILE"
+            echo "Log file rotated"
+        else
+            echo "Log file could not be rotated"
+        fi
+    fi
+fi
+
 GET_IP_URLS[0]="https://ipv4.icanhazip.com"
 GET_IP_URLS[1]="https://ipv4.wtfismyip.com/text"
 GET_IP_URLS[2]="https://v4.ident.me"
