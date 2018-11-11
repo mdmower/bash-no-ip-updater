@@ -6,7 +6,7 @@ A bash script to update the IP address of [No-IP](https://www.noip.com/) hostnam
 __Prerequisites__
 
 * `bash`
-* `curl`
+* `curl` or `wget`
 * `sed`
 * GNU `coreutils`
 * `gzip` (optional, for log rotation)

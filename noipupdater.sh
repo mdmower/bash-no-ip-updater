@@ -59,6 +59,10 @@ fi
 
 # Functions
 
+cmd_exists() {
+    command -v "$1" > /dev/null 2>&1
+}
+
 # IP Validator
 # http://www.linuxjournal.com/content/validating-ip-address-bash-script
 function valid_ip() {
@@ -153,7 +157,7 @@ if [ "$ROTATE_LOGS" = true ]; then
         touch "$BACKUPFILE"
         if [ $? -eq 0 ]; then
             head -10000 "$LOGFILE" > "$BACKUPFILE"
-            if command -v gzip; then
+            if cmd_exists gzip; then
                 gzip "$BACKUPFILE"
             fi
             LASTLINES=$(tail -n +10001 "$LOGFILE")
@@ -172,7 +176,11 @@ GET_IP_URLS[3]="https://api.ipify.org"
 
 GIP_INDEX=0
 while [ -n ${GET_IP_URLS[$GIP_INDEX]} ] && ! valid_ip "$NEWIP"; do
-    NEWIP=$(curl -s ${GET_IP_URLS[$GIP_INDEX]} | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+    if cmd_exists curl; then
+        NEWIP=$(curl -s ${GET_IP_URLS[$GIP_INDEX]} | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+    else
+        NEWIP=$(wget -q -O - ${GET_IP_URLS[$GIP_INDEX]} | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
+    fi
     let GIP_INDEX++
 done
 
@@ -185,7 +193,11 @@ if ! valid_ip "$NEWIP"; then
 fi
 
 ENCODED_HOST=${HOST//,/%2C}
-RESPONSE=$(curl -s -k --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST&myip=$NEWIP")
+if cmd_exists curl; then
+    RESPONSE=$(curl -s --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST&myip=$NEWIP")
+else
+    RESPONSE=$(wget -q -O - --user-agent="$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST&myip=$NEWIP")
+fi
 OIFS=$IFS
 IFS=$'\n'
 SPLIT_RESPONSE=( $(echo "$RESPONSE" | grep -o '[0-9a-z!]\+\( [0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\)\?') )
