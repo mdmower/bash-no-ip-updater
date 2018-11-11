@@ -78,6 +78,47 @@ function valid_ip() {
     return $stat
 }
 
+function get_logline() {
+    local host=$1
+    local response=$(echo $2 | tr -cd "[:print:]")
+    local response_a=$(echo $response | awk '{ print $1 }')
+    local response_b
+
+    case $response_a in
+        "good")
+            response_b=$(echo "$response" | awk '{ print $2 }')
+            LOGLINE="(good) [$host] DNS hostname successfully updated to $response_b."
+            ;;
+        "nochg")
+            response_b=$(echo "$response" | awk '{ print $2 }')
+            LOGLINE="(nochg) [$host] IP address is current: $response_b; no update performed."
+            ;;
+        "nohost")
+            LOGLINE="(nohost) [$host] Hostname supplied does not exist under specified account. Revise config file."
+            ;;
+        "badauth")
+            LOGLINE="(badauth) [$host] Invalid username password combination."
+            ;;
+        "badagent")
+            LOGLINE="(badagent) [$host] Client disabled - No-IP is no longer allowing requests from this update script."
+            ;;
+        '!donator')
+            LOGLINE='(!donator)'" [$host] An update request was sent including a feature that is not available."
+            ;;
+        "abuse")
+            LOGLINE="(abuse) [$host] Username is blocked due to abuse."
+            ;;
+        "911")
+            LOGLINE="(911) [$host] A fatal error on our side such as a database outage. Retry the update in no sooner than 30 minutes."
+            ;;
+        *)
+            LOGLINE="(error) [$host] Could not understand the response from No-IP. The DNS update server may be down."
+            ;;
+    esac
+
+    return 0
+}
+
 # Program
 
 NOW=$(date '+%s')
@@ -131,47 +172,6 @@ SPLIT_RESPONSE=( $(echo "$RESPONSE" | grep -o '[0-9a-z!]\+\( [0-9]\{1,3\}\.[0-9]
 IFS=','
 SPLIT_HOST=( $(echo "$HOST") )
 IFS=$OIFS
-
-function get_logline() {
-    local host=$1
-    local response=$(echo $2 | tr -cd "[:print:]")
-    local response_a=$(echo $response | awk '{ print $1 }')
-    local response_b
-
-    case $response_a in
-        "good")
-            response_b=$(echo "$response" | awk '{ print $2 }')
-            LOGLINE="(good) [$host] DNS hostname successfully updated to $response_b."
-            ;;
-        "nochg")
-            response_b=$(echo "$response" | awk '{ print $2 }')
-            LOGLINE="(nochg) [$host] IP address is current: $response_b; no update performed."
-            ;;
-        "nohost")
-            LOGLINE="(nohost) [$host] Hostname supplied does not exist under specified account. Revise config file."
-            ;;
-        "badauth")
-            LOGLINE="(badauth) [$host] Invalid username password combination."
-            ;;
-        "badagent")
-            LOGLINE="(badagent) [$host] Client disabled - No-IP is no longer allowing requests from this update script."
-            ;;
-        '!donator')
-            LOGLINE='(!donator)'" [$host] An update request was sent including a feature that is not available."
-            ;;
-        "abuse")
-            LOGLINE="(abuse) [$host] Username is blocked due to abuse."
-            ;;
-        "911")
-            LOGLINE="(911) [$host] A fatal error on our side such as a database outage. Retry the update in no sooner than 30 minutes."
-            ;;
-        *)
-            LOGLINE="(error) [$host] Could not understand the response from No-IP. The DNS update server may be down."
-            ;;
-    esac
-
-    return 0
-}
 
 echo "IP: $NEWIP"
 echo -n "$NEWIP" > "$IPFILE"
