@@ -45,15 +45,14 @@ if [ ! -d "$LOGDIR" ]; then
 fi
 
 LOGFILE=${LOGDIR%/}/noip.log
-IPFILE=${LOGDIR%/}/last_ip
-if [ ! -e "$LOGFILE" ] || [ ! -e "$IPFILE" ]; then
-    touch "$LOGFILE" "$IPFILE"
+if [ ! -e "$LOGFILE" ]; then
+    touch "$LOGFILE"
     if [ $? -ne 0 ]; then
         echo "Log files could not be created. Is the log directory writable?"
         exit 1
     fi
-elif [ ! -w "$LOGFILE" ] || [ ! -w "$IPFILE" ]; then
-    echo "Log files not writable."
+elif [ ! -w "$LOGFILE" ]; then
+    echo "Log file not writable."
     exit 1
 fi
 
@@ -169,34 +168,11 @@ if [ "$ROTATE_LOGS" = true ]; then
     fi
 fi
 
-GET_IP_URLS[0]="https://ipv4.icanhazip.com"
-GET_IP_URLS[1]="https://ipv4.wtfismyip.com/text"
-GET_IP_URLS[2]="https://v4.ident.me"
-GET_IP_URLS[3]="https://api.ipify.org"
-
-GIP_INDEX=0
-while [ -n ${GET_IP_URLS[$GIP_INDEX]} ] && ! valid_ip "$NEWIP"; do
-    if cmd_exists curl; then
-        NEWIP=$(curl -s ${GET_IP_URLS[$GIP_INDEX]} | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
-    else
-        NEWIP=$(wget -q -O - ${GET_IP_URLS[$GIP_INDEX]} | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}')
-    fi
-    let GIP_INDEX++
-done
-
-if ! valid_ip "$NEWIP"; then
-    LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
-    LOGLINE="Could not find current IP"
-    echo "$LOGLINE"
-    echo "$LOGDATE $LOGLINE" >> "$LOGFILE"
-    exit 1
-fi
-
 ENCODED_HOST=${HOST//,/%2C}
 if cmd_exists curl; then
-    RESPONSE=$(curl -s --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST&myip=$NEWIP")
+    RESPONSE=$(curl -s --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST")
 else
-    RESPONSE=$(wget -q -O - --user-agent="$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST&myip=$NEWIP")
+    RESPONSE=$(wget -q -O - --user-agent="$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST")
 fi
 OIFS=$IFS
 IFS=$'\n'
@@ -204,9 +180,6 @@ SPLIT_RESPONSE=( $(echo "$RESPONSE" | grep -o '[0-9a-z!]\+\( [0-9]\{1,3\}\.[0-9]
 IFS=','
 SPLIT_HOST=( $(echo "$HOST") )
 IFS=$OIFS
-
-echo "IP: $NEWIP"
-echo -n "$NEWIP" > "$IPFILE"
 
 LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
 
