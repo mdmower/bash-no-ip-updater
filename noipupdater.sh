@@ -45,15 +45,14 @@ if [ ! -d "$LOGDIR" ]; then
 fi
 
 LOGFILE=${LOGDIR%/}/noip.log
-IPFILE=${LOGDIR%/}/last_ip
-if [ ! -e "$LOGFILE" ] || [ ! -e "$IPFILE" ]; then
-    touch "$LOGFILE" "$IPFILE"
+if [ ! -e "$LOGFILE" ]; then
+    touch "$LOGFILE"
     if [ $? -ne 0 ]; then
         echo "Log files could not be created. Is the log directory writable?"
         exit 1
     fi
-elif [ ! -w "$LOGFILE" ] || [ ! -w "$IPFILE" ]; then
-    echo "Log files not writable."
+elif [ ! -w "$LOGFILE" ]; then
+    echo "Log file not writable."
     exit 1
 fi
 
@@ -181,9 +180,6 @@ SPLIT_RESPONSE=( $(echo "$RESPONSE" | grep -o '[0-9a-z!]\+\( [0-9]\{1,3\}\.[0-9]
 IFS=','
 SPLIT_HOST=( $(echo "$HOST") )
 IFS=$OIFS
-
-echo "IP: $NEWIP"
-echo -n "$NEWIP" > "$IPFILE"
 
 LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
 
