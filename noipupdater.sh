@@ -178,8 +178,8 @@ IFS=$OIFS
 
 LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
 
-for index in "${!SPLIT_HOST[@]}"; do
-    get_logline "${SPLIT_HOST[index]}" "${SPLIT_RESPONSE[index]}"
+for index in "${!HOSTS[@]}"; do
+    get_logline "${HOSTS[index]}" "${SPLIT_RESPONSE[index]}"
     echo "$LOGLINE"
     echo "$LOGDATE $LOGLINE" >> "$LOGFILE"
 done
