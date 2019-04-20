@@ -161,6 +161,11 @@ if [ "$ROTATE_LOGS" = true ]; then
     fi
 fi
 
+OIFS=$IFS
+IFS=','
+SPLIT_HOST=( $(echo "$HOST") )
+IFS=$OIFS
+
 USERNAME=$(echo -ne "$USERNAME" | urlencode)
 PASSWORD=$(echo -ne "$PASSWORD" | urlencode)
 HOST=$(echo -ne "$HOST" | urlencode)
@@ -169,8 +174,6 @@ RESPONSE=$(http_get "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?
 OIFS=$IFS
 IFS=$'\n'
 SPLIT_RESPONSE=( $(echo "$RESPONSE" | grep -o '[0-9a-z!]\+\( [0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\)\?') )
-IFS=','
-SPLIT_HOST=( $(echo "$HOST") )
 IFS=$OIFS
 
 LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
