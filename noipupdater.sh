@@ -33,9 +33,6 @@ fi
 
 USERAGENT="Bash No-IP Updater/1.0 $USERNAME"
 
-USERNAME=$(echo -ne "$USERNAME" | od -A n -t x1 | tr -d '\n' | sed 's/ /%/g')
-PASSWORD=$(echo -ne "$PASSWORD" | od -A n -t x1 | tr -d '\n' | sed 's/ /%/g')
-
 if [ ! -d "$LOGDIR" ]; then
     mkdir -p "$LOGDIR"
     if [ $? -ne 0 ]; then
@@ -58,8 +55,23 @@ fi
 
 # Functions
 
-cmd_exists() {
+function cmd_exists() {
     command -v "$1" > /dev/null 2>&1
+}
+
+function urlencode() {
+    od -A n -t x1 | tr -d '\n' | sed 's/ /%/g'
+}
+
+function http_get() {
+    if cmd_exists curl; then
+        curl -s --user-agent "$USERAGENT" "$1"
+    elif cmd_exists wget; then
+        wget -q -O - --user-agent="$USERAGENT" "$1"
+    else
+        echo -n "No http tool found. Install curl or wget." >&2
+        exit 1
+    fi
 }
 
 function get_logline() {
@@ -149,12 +161,11 @@ if [ "$ROTATE_LOGS" = true ]; then
     fi
 fi
 
-ENCODED_HOST=${HOST//,/%2C}
-if cmd_exists curl; then
-    RESPONSE=$(curl -s --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST")
-else
-    RESPONSE=$(wget -q -O - --user-agent="$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST")
-fi
+USERNAME=$(echo -ne "$USERNAME" | urlencode)
+PASSWORD=$(echo -ne "$PASSWORD" | urlencode)
+HOST=$(echo -ne "$HOST" | urlencode)
+
+RESPONSE=$(http_get "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST")
 OIFS=$IFS
 IFS=$'\n'
 SPLIT_RESPONSE=( $(echo "$RESPONSE" | grep -o '[0-9a-z!]\+\( [0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\)\?') )
