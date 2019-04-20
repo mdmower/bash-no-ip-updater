@@ -48,7 +48,8 @@ if [ ! -e "$LOGFILE" ]; then
         echo "Log files could not be created. Is the log directory writable?"
         exit 1
     fi
-elif [ ! -w "$LOGFILE" ]; then
+fi
+if [ ! -w "$LOGFILE" ]; then
     echo "Log file not writable."
     exit 1
 fi
