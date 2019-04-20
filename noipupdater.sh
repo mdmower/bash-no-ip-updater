@@ -61,7 +61,7 @@ function cmd_exists() {
 }
 
 function urlencode() {
-    od -A n -t x1 | tr -d '\n' | sed 's/ /%/g'
+    od -A n -t x1 | tr -d '\n' | tr -s ' ' | sed 's/[[:blank:]]*$//' | sed 's/ /%/g'
 }
 
 function http_get() {
