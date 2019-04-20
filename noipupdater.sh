@@ -21,6 +21,25 @@
 
 # Argument parsing
 
+# IP Validator
+# http://www.linuxjournal.com/content/validating-ip-address-bash-script
+function valid_ip() {
+    local ip=$1
+    local stat=1
+
+    if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        OIFS=$IFS
+        IFS='.'
+        ip=($ip)
+        IFS=$OIFS
+        [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
+            && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+        stat=$?
+    fi
+
+    return $stat
+}
+
 function usage() {
   echo "$0 [-c configfile] [ip]" >&2
   exit 1
@@ -32,7 +51,13 @@ if [ "$1" = "-c" ]; then
     CONFIGFILE="$2"; shift;
 elif [ -n "$1" ]; then
     NEWIP="$1"; shift
-    # todo: if ! valid_ip $NEWIP; then usage; fi
+    if ! valid_ip "$NEWIP"; then
+      # if we don't notice this and stop it, noip behaves as if we hadn't set it at all
+      # and updates the IP to the IP of the requesting machine
+      # which is probably not what you want if you're explicitly setting the IP
+      echo "error: invalid IP \"$NEWIP\"" >&2
+      usage;
+    fi
 fi
 
 if [ -n "$1" ]; then
