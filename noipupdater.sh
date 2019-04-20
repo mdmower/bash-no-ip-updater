@@ -17,6 +17,8 @@
 
 # Defines
 
+: ${XDG_CONFIG_HOME:=$HOME/.config}
+
 function usage() {
   echo "$0 [-c configfile]" >&2
   exit 1
@@ -28,7 +30,18 @@ if [ "$1" = "-c" ]; then
 elif [ -n "$1" ]; then
     usage;
 else
-    CONFIGFILE="$( cd "$( dirname "$0" )" && pwd )/config"
+    # search common locations in order of preference:
+    # - user's local homedir
+    # - system-wide
+    # - as a special case (to support eg quick installs on shared hosting), from the same dir we're in, and
+    for CONFIGFILE in \
+        "$XDG_CONFIG_HOME/noip/config" \
+        "/etc/noip.conf" \
+        "$( cd "$( dirname "$0" )" && pwd )/config"; do
+        if [ -e "$CONFIGFILE" ]; then
+            break
+        fi
+    done
 fi
 
 if [ -e "$CONFIGFILE" ]; then
