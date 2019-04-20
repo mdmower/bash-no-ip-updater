@@ -146,16 +146,17 @@ if [ -e "$LOGFILE" ] && tail -n1 "$LOGFILE" | grep -q -m1 '(abuse)'; then
     exit 1
 fi
 
-if [ -e "$LOGFILE" ] && tac "$LOGFILE" | grep -q -m1 '(911)'; then
-    NINELINE=$(tac "$LOGFILE" | grep -m1 '(911)')
-    LASTNL=$([[ "$NINELINE" =~ \[([^\]]+?)\] ]] && echo "${BASH_REMATCH[1]}")
-    LASTCONTACT=$(date -d "$LASTNL" '+%s')
-    if [ $((NOW - LASTCONTACT)) -lt 1800 ]; then
-        LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
-        LOGLINE="Response code 911 received less than 30 minutes ago; canceling request."
-        echo "$LOGLINE"
-        echo "$LOGDATE $LOGLINE" >> "$LOGFILE"
-        exit 1
+if [ -e "$LOGFILE" ]; then
+    if NINELINE=$(grep '(911)' "$LOGFILE" | tail -n 1); then
+        LASTNL=$([[ "$NINELINE" =~ \[([^\]]+?)\] ]] && echo "${BASH_REMATCH[1]}")
+        LASTCONTACT=$(date -d "$LASTNL" '+%s')
+        if [ $((NOW - LASTCONTACT)) -lt 1800 ]; then
+            LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
+            LOGLINE="Response code 911 received less than 30 minutes ago; canceling request."
+            echo "$LOGLINE"
+            echo "$LOGDATE $LOGLINE" >> "$LOGFILE"
+            exit 1
+        fi
     fi
 fi
 
