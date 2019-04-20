@@ -59,8 +59,29 @@ function cmd_exists() {
     command -v "$1" > /dev/null 2>&1
 }
 
+# https://unix.stackexchange.com/questions/60653/urlencode-function/60698#60698 (thanks @gilles! this code is great!)
 function urlencode() {
-    od -A n -t x1 | tr -d '\n' | sed 's/ /%/g'
+  read string;
+  format=; set --
+  while
+    literal=${string%%[!-._~0-9A-Za-z]*}
+    case "$literal" in
+      ?*)
+        format=$format%s
+        set -- "$@" "$literal"
+        string=${string#$literal};;
+    esac
+    case "$string" in
+      "") false;;
+    esac
+  do
+    tail=${string#?}
+    head=${string%$tail}
+    format=$format%%%02x
+    set -- "$@" "'$head"
+    string=$tail
+  done
+  printf "$format\\n" "$@"
 }
 
 function http_get() {
