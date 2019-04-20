@@ -22,14 +22,20 @@
 # Argument parsing
 
 function usage() {
-  echo "$0 [-c configfile]" >&2
+  echo "$0 [-c configfile] [ip]" >&2
   exit 1
 }
 
+NEWIP="" # NB: an empty NEWIP will trigger noip's autodetection feature
 if [ "$1" = "-c" ]; then
-    CONFIGFILE="$2";
-    shift; shift;
+    shift;
+    CONFIGFILE="$2"; shift;
 elif [ -n "$1" ]; then
+    NEWIP="$1"; shift
+    # todo: if ! valid_ip $NEWIP; then usage; fi
+fi
+
+if [ -n "$1" ]; then
     usage;
 fi
 
@@ -182,9 +188,9 @@ fi
 
 ENCODED_HOST=${HOST//,/%2C}
 if cmd_exists curl; then
-    RESPONSE=$(curl -s --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST")
+    RESPONSE=$(curl -s --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST&myip=$NEWIP")
 else
-    RESPONSE=$(wget -q -O - --user-agent="$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST")
+    RESPONSE=$(wget -q -O - --user-agent="$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST$myip=$NEWIP")
 fi
 OIFS=$IFS
 IFS=$'\n'
