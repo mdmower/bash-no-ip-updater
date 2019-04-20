@@ -23,11 +23,12 @@
 
 # IP Validator
 # http://www.linuxjournal.com/content/validating-ip-address-bash-script
+# tweaked to match noip's definition, which disallows leading zeroes
 function valid_ip() {
     local ip=$1
     local stat=1
 
-    if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+    if [[ $ip. =~ ^((0|[1-9][0-9]{0,2})\.){4}$ ]]; then
         OIFS=$IFS
         IFS='.'
         ip=($ip)
