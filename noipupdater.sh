@@ -17,7 +17,7 @@
 
 # Defines
 
-: ${XDG_CONFIG_HOME:=$HOME/.config}
+: "${XDG_CONFIG_HOME:=$HOME/.config}"
 
 function usage() {
   echo "$0 [-c configfile]" >&2
