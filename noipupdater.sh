@@ -19,6 +19,8 @@
 
 : "${XDG_CONFIG_HOME:=$HOME/.config}"
 
+# Argument parsing
+
 function usage() {
   echo "$0 [-c configfile]" >&2
   exit 1
@@ -29,7 +31,11 @@ if [ "$1" = "-c" ]; then
     shift; shift;
 elif [ -n "$1" ]; then
     usage;
-else
+fi
+
+# Load account config
+
+if [ -z "$CONFIGFILE" ]; then
     # search common locations in order of preference:
     # - user's local homedir
     # - system-wide
