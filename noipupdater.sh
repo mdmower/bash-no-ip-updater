@@ -15,6 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -eo pipefail
+
 # Defines
 
 CONFIGFILE="$( cd "$( dirname "$0" )" && pwd )/config"
@@ -170,7 +172,7 @@ USERNAME=$(echo -ne "$USERNAME" | urlencode)
 PASSWORD=$(echo -ne "$PASSWORD" | urlencode)
 HOST=$(echo -ne "$HOST" | urlencode)
 
-let index=0
+index=0
 http_get "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST" |
   grep -o '[0-9a-z!]\+\( [0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\)\?' |
   while read -r response; do
