@@ -189,13 +189,13 @@ OIFS=$IFS
 IFS=$'\n'
 SPLIT_RESPONSE=( $(echo "$RESPONSE" | grep -o '[0-9a-z!]\+\( [0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\)\?') )
 IFS=','
-SPLIT_HOST=( $(echo "$HOST") )
+HOSTS=($HOST)
 IFS=$OIFS
 
 LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
 
-for index in "${!SPLIT_HOST[@]}"; do
-    get_logline "${SPLIT_HOST[index]}" "${SPLIT_RESPONSE[index]}"
+for index in "${!HOSTS[@]}"; do
+    get_logline "${HOSTS[index]}" "${SPLIT_RESPONSE[index]}"
     echo "$LOGLINE"
     echo "$LOGDATE $LOGLINE" >> "$LOGFILE"
 done
