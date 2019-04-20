@@ -34,8 +34,7 @@ fi
 USERAGENT="Bash No-IP Updater/1.0 $USERNAME"
 
 if [ ! -d "$LOGDIR" ]; then
-    mkdir -p "$LOGDIR"
-    if [ $? -ne 0 ]; then
+    if ! mkdir -p "$LOGDIR"; then
         echo "Log directory could not be created or accessed."
         exit 1
     fi
@@ -43,8 +42,7 @@ fi
 
 LOGFILE=${LOGDIR%/}/noip.log
 if [ ! -e "$LOGFILE" ]; then
-    touch "$LOGFILE"
-    if [ $? -ne 0 ]; then
+    if ! touch "$LOGFILE"; then
         echo "Log files could not be created. Is the log directory writable?"
         exit 1
     fi
@@ -76,10 +74,14 @@ function http_get() {
 }
 
 function get_logline() {
-    local host=$1
-    local response=$(echo $2 | tr -cd "[:print:]")
-    local response_a=$(echo $response | awk '{ print $1 }')
+    local host
+    local response
+    local response_a
     local response_b
+
+    host="$1"
+    response=$(echo "$2" | tr -cd "[:print:]")
+    response_a=$(echo "$response" | awk '{ print $1 }')
 
     case $response_a in
         "good")
@@ -119,6 +121,7 @@ function get_logline() {
 # Program
 
 NOW=$(date '+%s')
+LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
 
 if [ -e "$LOGFILE" ] && tail -n1 "$LOGFILE" | grep -q -m1 '(abuse)'; then
     echo "This account has been flagged for abuse. You need to contact noip.com to resolve"
@@ -133,7 +136,7 @@ if [ -e "$LOGFILE" ] && tac "$LOGFILE" | grep -q -m1 '(911)'; then
     NINELINE=$(tac "$LOGFILE" | grep -m1 '(911)')
     LASTNL=$([[ "$NINELINE" =~ \[([^\]]+?)\] ]] && echo "${BASH_REMATCH[1]}")
     LASTCONTACT=$(date -d "$LASTNL" '+%s')
-    if [ `expr $NOW - $LASTCONTACT` -lt 1800 ]; then
+    if [ "$(("$NOW" - "$LASTCONTACT"))" -lt 1800 ]; then
         LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
         LOGLINE="Response code 911 received less than 30 minutes ago; canceling request."
         echo "$LOGLINE"
@@ -144,11 +147,10 @@ fi
 
 if [ "$ROTATE_LOGS" = true ]; then
     LOGLENGTH=$(wc -l "$LOGFILE" | awk '{ print $1 }')
-    if [ $LOGLENGTH -ge 10010 ]; then
+    if [ "$LOGLENGTH" -ge 10010 ]; then
         BACKUPDATE=$(date +'%Y-%m-%d_%H%M%S')
         BACKUPFILE="$LOGFILE-$BACKUPDATE.log"
-        touch "$BACKUPFILE"
-        if [ $? -eq 0 ]; then
+        if touch "$BACKUPFILE"; then
             head -10000 "$LOGFILE" > "$BACKUPFILE"
             if cmd_exists gzip; then
                 gzip "$BACKUPFILE"
@@ -162,27 +164,23 @@ if [ "$ROTATE_LOGS" = true ]; then
     fi
 fi
 
-OIFS=$IFS
-IFS=','
-SPLIT_HOST=( $(echo "$HOST") )
-IFS=$OIFS
+IFS="," read -r -a HOSTS <<<"$HOST"
 
 USERNAME=$(echo -ne "$USERNAME" | urlencode)
 PASSWORD=$(echo -ne "$PASSWORD" | urlencode)
 HOST=$(echo -ne "$HOST" | urlencode)
 
-RESPONSE=$(http_get "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST")
-OIFS=$IFS
-IFS=$'\n'
-SPLIT_RESPONSE=( $(echo "$RESPONSE" | grep -o '[0-9a-z!]\+\( [0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\)\?') )
-IFS=$OIFS
-
-LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
-
-for index in "${!HOSTS[@]}"; do
-    get_logline "${HOSTS[index]}" "${SPLIT_RESPONSE[index]}"
+let index=0
+http_get "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST" |
+  grep -o '[0-9a-z!]\+\( [0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\)\?' |
+  while read -r response; do
+    # there's one line per host (https://www.noip.com/integrate/response)
+    # however if you over-request noip will ratelimit by only returning
+    # a single line, and then no lines if you push it harder.
+    get_logline "${HOSTS[index]}" "$response"
     echo "$LOGLINE"
     echo "$LOGDATE $LOGLINE" >> "$LOGFILE"
-done
+    (( index++ ))
+  done
 
 exit 0
