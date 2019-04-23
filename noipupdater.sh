@@ -59,29 +59,21 @@ function cmd_exists() {
     command -v "$1" > /dev/null 2>&1
 }
 
-# https://unix.stackexchange.com/questions/60653/urlencode-function/60698#60698 (thanks @gilles! this code is great!)
+# Adapted from one of the more readable answers by Gilles at
+# https://unix.stackexchange.com/questions/60653/urlencode-function/60698#60698
 function urlencode() {
-  read string;
-  format=; set --
-  while
-    literal=${string%%[!-._~0-9A-Za-z]*}
-    case "$literal" in
-      ?*)
-        format=$format%s
-        set -- "$@" "$literal"
-        string=${string#$literal};;
-    esac
-    case "$string" in
-      "") false;;
-    esac
-  do
-    tail=${string#?}
-    head=${string%$tail}
-    format=$format%%%02x
-    set -- "$@" "'$head"
-    string=$tail
-  done
-  printf "$format\\n" "$@"
+    local string="$1"
+    while [ -n "$string" ]; do
+        local tail="${string#?}"
+        local head="${string%"$tail"}"
+        case "$head" in
+            [-._~0-9A-Za-z])
+                printf "%c" "$head";;
+            *)
+                printf "%%%02x" "'$head"
+        esac
+        string="$tail"
+    done
 }
 
 function http_get() {
@@ -182,9 +174,9 @@ if [ "$ROTATE_LOGS" = true ]; then
     fi
 fi
 
-USERNAME=$(echo -ne "$USERNAME" | urlencode)
-PASSWORD=$(echo -ne "$PASSWORD" | urlencode)
-ENCODED_HOST=$(echo -ne "$HOST" | urlencode)
+USERNAME=$(urlencode "$USERNAME")
+PASSWORD=$(urlencode "$PASSWORD")
+ENCODED_HOST=$(urlencode "$HOST")
 
 RESPONSE=$(http_get "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST")
 OIFS=$IFS
