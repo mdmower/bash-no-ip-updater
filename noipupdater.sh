@@ -69,7 +69,7 @@ function http_get() {
     elif cmd_exists wget; then
         wget -q -O - --user-agent="$USERAGENT" "$1"
     else
-        echo -n "No http tool found. Install curl or wget." >&2
+        echo "No http tool found. Install curl or wget." >&2
         exit 1
     fi
 }
@@ -163,9 +163,9 @@ fi
 
 USERNAME=$(echo -ne "$USERNAME" | urlencode)
 PASSWORD=$(echo -ne "$PASSWORD" | urlencode)
-HOST=$(echo -ne "$HOST" | urlencode)
+ENCODED_HOST=$(echo -ne "$HOST" | urlencode)
 
-RESPONSE=$(http_get "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST")
+RESPONSE=$(http_get "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST")
 OIFS=$IFS
 IFS=$'\n'
 SPLIT_RESPONSE=( $(echo "$RESPONSE" | grep -o '[0-9a-z!]\+\( [0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\)\?') )
