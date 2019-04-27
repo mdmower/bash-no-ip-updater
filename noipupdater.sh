@@ -143,6 +143,9 @@ function get_logline() {
         "911")
             LOGLINE="(911) [$host] A fatal error on our side such as a database outage. Retry the update in no sooner than 30 minutes."
             ;;
+        "")
+            LOGLINE="(empty) [$host] No response received from No-IP. This may be due to rate limiting or a server-side problem."
+            ;;
         *)
             LOGLINE="(error) [$host] Could not understand the response from No-IP. The DNS update server may be down."
             ;;
