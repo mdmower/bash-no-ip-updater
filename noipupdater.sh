@@ -69,6 +69,9 @@ if [ ! -w "$LOGFILE" ]; then
     exit 1
 fi
 
+NOW=$(date '+%s')
+LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
+
 # Functions
 
 function cmd_exists() {
@@ -150,8 +153,6 @@ function get_logline() {
 
 # Program
 
-NOW=$(date '+%s')
-
 if [ -e "$LOGFILE" ] && tail -n1 "$LOGFILE" | grep -q -m1 '(abuse)'; then
     echo "This account has been flagged for abuse. You need to contact noip.com to resolve"
     echo "the issue. Once you have confirmed your account is in good standing, remove the"
@@ -166,7 +167,6 @@ if [ -e "$LOGFILE" ]; then
         LASTNL=$([[ "$NINELINE" =~ \[([^\]]+?)\] ]] && echo "${BASH_REMATCH[1]}")
         LASTCONTACT=$(date -d "$LASTNL" '+%s')
         if [ $((NOW - LASTCONTACT)) -lt 1800 ]; then
-            LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
             LOGLINE="Response code 911 received less than 30 minutes ago; canceling request."
             echo "$LOGLINE"
             echo "$LOGDATE $LOGLINE" >> "$LOGFILE"
@@ -205,8 +205,6 @@ SPLIT_RESPONSE=( $(echo "$RESPONSE" | grep -o '[0-9a-z!]\+\( [0-9]\{1,3\}\.[0-9]
 IFS=','
 SPLIT_HOST=( $HOST )
 IFS=$OIFS
-
-LOGDATE="[$(date +'%Y-%m-%d %H:%M:%S')]"
 
 for index in "${!SPLIT_HOST[@]}"; do
     get_logline "${SPLIT_HOST[index]}" "${SPLIT_RESPONSE[index]}"
