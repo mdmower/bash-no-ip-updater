@@ -24,12 +24,12 @@ CONFIGFILE="$( cd "$( dirname "$0" )" && pwd )/config"
 if [ -e "$CONFIGFILE" ]; then
     source "$CONFIGFILE"
 else
-    echo "Config file not found."
+    echo "Config file not found." >&2
     exit 1
 fi
 
 if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
-   echo "USERNAME or PASSWORD has not been set in the config file."
+   echo "USERNAME or PASSWORD has not been set in the config file." >&2
    exit 1
 fi
 
@@ -37,7 +37,7 @@ USERAGENT="Bash No-IP Updater/1.0 $USERNAME"
 
 if [ ! -d "$LOGDIR" ]; then
     if ! mkdir -p "$LOGDIR"; then
-        echo "Log directory could not be created or accessed."
+        echo "Log directory could not be created or accessed." >&2
         exit 1
     fi
 fi
@@ -45,12 +45,12 @@ fi
 LOGFILE=${LOGDIR%/}/noip.log
 if [ ! -e "$LOGFILE" ]; then
     if ! touch "$LOGFILE"; then
-        echo "Log files could not be created. Is the log directory writable?"
+        echo "Log files could not be created. Is the log directory writable?" >&2
         exit 1
     fi
 fi
 if [ ! -w "$LOGFILE" ]; then
-    echo "Log file not writable."
+    echo "Log file not writable." >&2
     exit 1
 fi
 
