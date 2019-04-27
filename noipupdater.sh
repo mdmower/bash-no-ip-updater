@@ -48,7 +48,7 @@ if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
    exit 1
 fi
 
-USERAGENT="Bash No-IP Updater/1.0 $USERNAME"
+USERAGENT="Bash No-IP Updater/1.1 $USERNAME"
 
 if [ ! -d "$LOGDIR" ]; then
     if ! mkdir -p "$LOGDIR"; then
