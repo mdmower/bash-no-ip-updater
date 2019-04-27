@@ -13,12 +13,11 @@ __Prerequisites__
 
 __Usage__
 
-1. Copy `config_sample` to `config` and update the variables
-2. Make the script executable (`chmod +x noipupdater.sh`)
-3. Run it (`./noipupdater.sh`)
+`noipupdater.sh [-c /path/to/config] [-i 123.123.123.123]`
 
-Location of config file can optionally be specified by passing parameter `-c`. For example,  
-`./noipupdater.sh -c /path/to/config`
+`-c` (optional): Path to config file (see `config_sample`). If this parameter is not specified, then the script will look for file `config` in the same directory as the script.
+
+`-i` (optional): Manually set the IP address that should be assigned to the hostname(s). If this paremter is not specified, the IP address will be auto-detected by No-IP.
 
 __Automation__
 

@@ -20,7 +20,7 @@ set -eo pipefail
 # Functions
 
 function usage() {
-    echo "$0 [-c configfile]" >&2
+    echo "$0 [-c /path/to/config] [-i 123.123.123.123]" >&2
     exit 1
 }
 
@@ -125,10 +125,12 @@ function get_logline() {
 
 # Defines
 
-CONFIGFILE=''
-while getopts 'c:' flag; do
+CONFIGFILE=""
+NEWIP=""
+while getopts 'c:i:' flag; do
     case "${flag}" in
         c) CONFIGFILE="${OPTARG}" ;;
+        i) NEWIP="${OPTARG}" ;;
         *) usage ;;
     esac
 done
@@ -141,6 +143,11 @@ if [ -e "$CONFIGFILE" ]; then
     source "$CONFIGFILE"
 else
     echo "Config file not found." >&2
+    exit 1
+fi
+
+if [ -n "$NEWIP" ] && ! valid_ip "$NEWIP"; then
+    echo "Invalid IP address specified." >&2
     exit 1
 fi
 
@@ -220,7 +227,13 @@ USERNAME=$(urlencode "$USERNAME")
 PASSWORD=$(urlencode "$PASSWORD")
 ENCODED_HOST=$(urlencode "$HOST")
 
-RESPONSE=$(http_get "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST")
+REQUEST_URL="https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$ENCODED_HOST"
+if [ -n "$NEWIP" ]; then
+    NEWIP=$(urlencode "$NEWIP")
+    REQUEST_URL="$REQUEST_URL&myip=$NEWIP"
+fi
+
+RESPONSE=$(http_get "$REQUEST_URL")
 OIFS=$IFS
 IFS=$'\n'
 SPLIT_RESPONSE=( $(echo "$RESPONSE" | grep -o '[0-9a-z!]\+\( [0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\)\?') )
