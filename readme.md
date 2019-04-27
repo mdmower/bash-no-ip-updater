@@ -17,6 +17,9 @@ __Usage__
 2. Make the script executable (`chmod +x noipupdater.sh`)
 3. Run it (`./noipupdater.sh`)
 
+Location of config file can optionally be specified by passing parameter `-c`. For example,  
+`./noipupdater.sh -c /path/to/config`
+
 __Automation__
 
 Include the script in your cron file (`crontab -e`):

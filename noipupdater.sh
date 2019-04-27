@@ -20,16 +20,19 @@ set -eo pipefail
 # Defines
 
 function usage() {
-  echo "$0 [-c configfile]" >&2
-  exit 1
+    echo "$0 [-c configfile]" >&2
+    exit 1
 }
 
-if [ "$1" = "-c" ]; then
-    CONFIGFILE="$2";
-    shift; shift;
-elif [ -n "$1" ]; then
-    usage;
-else
+CONFIGFILE=''
+while getopts 'c:' flag; do
+    case "${flag}" in
+        c) CONFIGFILE="${OPTARG}" ;;
+        *) usage ;;
+    esac
+done
+
+if [ -z "$CONFIGFILE" ]; then
     CONFIGFILE="$( cd "$( dirname "$0" )" && pwd )/config"
 fi
 
